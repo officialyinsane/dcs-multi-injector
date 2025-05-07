@@ -32,7 +32,7 @@ POSTGRES_USER=some-user
 POSTGRES_PASSWORD=a-better-password-than-this
 ```
 5. Start the dcs-injector-ui container.
-6. Navigate to [http://localhost:8080/injector].
+6. Navigate to [http://localhost:8080/injector](http://localhost:8080/injector).
 7. Copy/pasta some Lua code in.
 8. Hit play.
 9. Profit.
