@@ -1,0 +1,40 @@
+services:
+
+  dcs-injector-db:
+    container_name: dcs-injector-db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    image: repo.obora.co.uk/third-party/postgres:16.8
+    restart: always
+    networks:
+      - dcs
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-injector}
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+
+  injector-ui:
+    container_name: dcs-injector-ui
+    depends_on:
+      - dcs-injector-db
+    image: repo.obora.co.uk/dcs/multi-injector:latest
+    restart: always
+    networks:
+      - dcs
+    ports:
+      - "8080:8080"
+
+networks:
+  dcs:
+
+volumes:
+  postgres_data:
+  postgres_dev_data:
