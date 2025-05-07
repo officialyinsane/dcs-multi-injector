@@ -1,4 +1,9 @@
 .idea/**
-./frontend/**
-./node_modules/**
-./target/**
+frontend/**
+node_modules/**
+target/**
+/package*.json
+/tsconfig.json
+/types.d.ts
+/vite.*.ts
+/src/main/bundles/prod.bundle
