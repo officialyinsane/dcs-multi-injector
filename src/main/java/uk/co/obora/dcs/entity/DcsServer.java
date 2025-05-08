@@ -33,7 +33,7 @@ public class DcsServer { // TODO: Entity - should really have more constraints
     private String hostname;
 
     @Column(name = "port", nullable = false)
-    private int port;
+    private Integer port;
 
     @Column(name = "password", nullable = false, length = 100)
     private String password;

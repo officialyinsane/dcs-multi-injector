@@ -50,6 +50,9 @@ spring:
             token-uri: https://discord.com/api/oauth2/token
             user-info-uri: https://discordapp.com/api/users/@me
             user-name-attribute: username
+  session:
+    jdbc:
+      initialize-schema: always
 
 vaadin:
   devmode-caching: false

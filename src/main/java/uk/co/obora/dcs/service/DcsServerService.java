@@ -18,7 +18,7 @@ import static java.util.stream.Collectors.toMap;
 @Service
 @Slf4j
 @UIScope
-public class DcsServerService {
+public class DcsServerService extends AbstractDbService<DcsServer> {
 
     private final DcsServerRepository repository;
 
