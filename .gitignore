@@ -7,3 +7,4 @@ target/**
 /types.d.ts
 /vite.*.ts
 /src/main/bundles/prod.bundle
+/.env
