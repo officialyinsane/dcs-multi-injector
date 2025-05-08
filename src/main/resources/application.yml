@@ -1,0 +1,55 @@
+management:
+  endpoint:
+    health:
+      show-details: always
+      group:
+        custom:
+          include:
+            - db
+          show-details: always
+  endpoints:
+    web:
+      exposure:
+        exclude: "diskspace"
+        include: "health,db"
+  health:
+    db:
+      enabled: true
+
+spring:
+  datasource:
+    password: "${POSTGRES_PASSWORD:password}"
+    url: "jdbc:postgresql://${POSTGRES_HOST:dcs-injector-db}:5432/injector"
+    username: "${POSTGRES_USER:user}"
+  flyway:
+    clean-disabled: true
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  main:
+    banner-mode: off
+  security:
+    oauth2:
+      client:
+        registration:
+          discord:
+            redirect-uri: "{baseUrl}/login/oauth2/code/discord"
+            authorization-grant-type: authorization_code
+            client-id: ${OAUTH_DISCORD_APPLICATION_ID}
+            client-name: ${OAUTH_DISCORD_APPLICATION_NAME}
+            client-secret: ${OAUTH_DISCORD_APPLICATION_SECRET}
+            client-authentication-method: POST
+            scope: [ identify, email ]
+        provider:
+          discord:
+            authorization-uri: https://discord.com/oauth2/authorize
+            token-uri: https://discord.com/api/oauth2/token
+            user-info-uri: https://discordapp.com/api/users/@me
+            user-name-attribute: username
+
+vaadin:
+  devmode-caching: false

@@ -9,7 +9,7 @@ services:
       retries: 5
       start_period: 30s
     image: repo.obora.co.uk/third-party/postgres:16.8
-    restart: always
+    restart: unless-stopped
     networks:
       - dcs
     ports:
@@ -25,6 +25,10 @@ services:
     container_name: dcs-injector-ui
     depends_on:
       - dcs-injector-db
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - VAADIN_PRODUCTION_MODE=true
+      - VAADIN_SERVLET_PRODUCTIONMODE=true
     image: repo.obora.co.uk/dcs/multi-injector:latest
     restart: always
     networks:

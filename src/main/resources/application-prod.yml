@@ -1,0 +1,7 @@
+vaadin:
+  frontend:
+    hotdeploy: false
+  servlet:
+    production:
+      mode: true
+  productionMode: true

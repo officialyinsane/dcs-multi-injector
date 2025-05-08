@@ -7,9 +7,9 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.shared.ThemeVariant;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.RolesAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
 import uk.co.obora.dcs.Injector;
 import uk.co.obora.dcs.dto.InboundPacket;
@@ -24,7 +24,8 @@ import static com.vaadin.flow.component.notification.NotificationVariant.LUMO_ER
 import static com.vaadin.flow.component.notification.NotificationVariant.LUMO_SUCCESS;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
 
-@Route("injector")
+@Route("dcs-injector")
+@RolesAllowed("REGULAR_USER")
 public class InjectorRoute extends VerticalLayout {
 
     private final DcsServerService service;
