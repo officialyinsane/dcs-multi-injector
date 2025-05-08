@@ -17,7 +17,7 @@
         <lombok.version>1.18.36</lombok.version>
         <java.version>21</java.version>
         <spring-boot.version>3.3.5</spring-boot.version>
-        <vaadin.version>24.3.5</vaadin.version>
+        <vaadin.version>24.7.3</vaadin.version>
 
     </properties>
 

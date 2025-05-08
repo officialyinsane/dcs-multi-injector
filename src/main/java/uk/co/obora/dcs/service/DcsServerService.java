@@ -11,7 +11,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toMap;
 
 @RequiredArgsConstructor
 @Service
@@ -34,7 +35,7 @@ public class DcsServerService {
 
         try {
             servers = list().stream()
-                .collect(Collectors.toMap(DcsServer::getName, server -> server));
+                .collect(toMap(DcsServer::getName, server -> server));
         } catch (Exception e) {
             log.warn("Failed to fetch DCS servers", e);
         }

@@ -2,12 +2,13 @@ package uk.co.obora.dcs;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import uk.co.obora.dcs.dto.InboundPacket;
 import uk.co.obora.dcs.entity.DcsServer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @Disabled("This test requires a running DCS instance")
-public class InjectorTest {
+public class InjectorRouteTest {
 
     @Test
     public void connectionFailThrowsException() {

@@ -1,4 +1,4 @@
-package uk.co.obora.dcs;
+package uk.co.obora.dcs.dto;
 
 import lombok.Builder;
 import lombok.Getter;
