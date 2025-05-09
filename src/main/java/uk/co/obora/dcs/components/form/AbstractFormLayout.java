@@ -2,30 +2,35 @@ package uk.co.obora.dcs.components.form;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasEnabled;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.KeyUpEvent;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.textfield.TextFieldBase;
 import lombok.Getter;
 
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
+import java.util.function.Consumer;
 
 @Getter
 public abstract class AbstractFormLayout<T> extends FormLayout {
 
+    // TODO: Pressing Enter should save
+    // TODO: Pressing ESC should discard
+    private Consumer<Void> consumeEnterPressed;
+    private Consumer<Void> consumeEscapePressed;
+
     private Map<String, Component> fields = new LinkedHashMap<>();
-    private Set<String> fieldNamesInOrder = new LinkedHashSet<>();
     private T cachedItem;
 
-    public AbstractFormLayout() {
-        fieldNamesInOrder.addAll(setupFieldOrdering());
+    public AbstractFormLayout(Consumer<Void> consumeEnterPressed, Consumer<Void> consumeEscapePressed) {
+        this.consumeEnterPressed = consumeEnterPressed;
+        this.consumeEscapePressed = consumeEscapePressed;
+
         fields.putAll(createFields());
-        fieldNamesInOrder.forEach(field -> {
-            this.createField(Map.entry(field, fields.get(field)));
-        });
         fields.entrySet().forEach(this::createField);
 
         setResponsiveSteps(new ResponsiveStep("0", 1));
@@ -64,7 +69,20 @@ public abstract class AbstractFormLayout<T> extends FormLayout {
     private void createField(Map.Entry<String, Component> entry) {
         Component component = entry.getValue();
         setFieldEnabled(component, false);
+
+        if (component instanceof TextFieldBase<?, ?> base) {
+            base.addKeyUpListener(event -> this.onKeyUp(event));
+        }
+
         add(component);
+    }
+
+    private void onKeyUp(KeyUpEvent event) {
+        if (event.getKey().equals(Key.ENTER)) {
+            consumeEnterPressed.accept(null);
+        } else if (event.getKey().equals(Key.ESCAPE)) {
+            consumeEscapePressed.accept(null);
+        }
     }
 
     private void setFieldEnabled(Component field, boolean enabled) {
@@ -80,7 +98,6 @@ public abstract class AbstractFormLayout<T> extends FormLayout {
     public abstract void setItem(T item);
     public abstract T getItem();
 
-    protected abstract Set<String> setupFieldOrdering();
-    protected abstract Map<String, Component> createFields();
+    protected abstract LinkedHashMap<String, Component> createFields();
 
 }

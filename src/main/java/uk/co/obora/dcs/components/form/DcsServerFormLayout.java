@@ -6,33 +6,27 @@ import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import uk.co.obora.dcs.entity.DcsServer;
 
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.LinkedHashMap;
+import java.util.function.Consumer;
 
 public class DcsServerFormLayout extends AbstractFormLayout<DcsServer> {
 
     private static final int DEFAULT_PORT = 18080;
 
-
-    @Override
-    protected Set<String> setupFieldOrdering() {
-        LinkedHashSet<String> ordering = new LinkedHashSet<>();
-        ordering.add("Name");
-        ordering.add("Hostname");
-        ordering.add("Port");
-        ordering.add("Password");
-        return ordering;
+    public DcsServerFormLayout(Consumer<Void> consumeEnterPressed, Consumer<Void> consumeEscapePressed) {
+        super(consumeEnterPressed, consumeEscapePressed);
     }
 
     @Override
-    protected Map<String, Component> createFields() {
-        return Map.of(
-            "Name", new TextField("Name"),
-            "Hostname", new TextField("Hostname"),
-            "Port", new IntegerField("Port"),
-            "Password", new PasswordField("Password")
-        );
+    protected LinkedHashMap<String, Component> createFields() {
+        LinkedHashMap<String, Component> fields = new LinkedHashMap<>();
+
+        fields.put("Name", new TextField("Name"));
+        fields.put("Hostname", new TextField("Hostname"));
+        fields.put("Port", new IntegerField("Port"));
+        fields.put("Password", new PasswordField("Password"));
+
+        return fields;
     }
 
     @Override

@@ -1,12 +1,15 @@
-package uk.co.obora.dcs.components;
+package uk.co.obora.dcs.components.crud;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import uk.co.obora.dcs.components.Notifier;
 import uk.co.obora.dcs.components.form.AbstractFormLayout;
 import uk.co.obora.dcs.components.grid.AbstractGrid;
 import uk.co.obora.dcs.service.AbstractDbService;
@@ -17,7 +20,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import static com.vaadin.flow.component.button.ButtonVariant.LUMO_ERROR;
+import static com.vaadin.flow.component.button.ButtonVariant.LUMO_PRIMARY;
+
 @Getter
+@Slf4j
 public abstract class AbstractCrudComponent<T,
     FORM extends AbstractFormLayout<T>,
     GRID extends AbstractGrid<T>,
@@ -49,7 +56,8 @@ public abstract class AbstractCrudComponent<T,
         formWithButtons.add(form, buttonBar);
 
         setEditingMode(false);
-        add(createSearchAbleGrid(grid), formWithButtons);
+
+        add(createSearchableGrid(grid), formWithButtons);
         setFlexGrow(1, grid);
     }
 
@@ -71,23 +79,30 @@ public abstract class AbstractCrudComponent<T,
 
     protected List<Button> getDefaultButtons() {
         return List.of(
-            createButton("Save", false, event -> {
-                saveItem();
-                setEditingMode(false);
-            }),
-            createButton("Discard", false, event -> {
-                form.clearAllFields();
-                setEditingMode(false);
-            }),
-            createButton("Delete", false, event -> {
-                deleteItem();
-                setEditingMode(false);
-            })
+            createButton("Save", false, event -> onSaveEvent(), LUMO_PRIMARY),
+            createButton("Discard", false, event -> onDiscardEvent()),
+            createButton("Delete", false, event -> onDeleteEvent(), LUMO_PRIMARY, LUMO_ERROR)
         );
     }
 
-    protected Button createButton(String text, boolean enabled, Consumer<ClickEvent<Button>> consumer) {
+    protected void onSaveEvent() {
+        saveItem();
+        setEditingMode(false);
+    }
+
+    protected void onDiscardEvent() {
+        form.clearAllFields();
+        setEditingMode(false);
+    }
+
+    protected void onDeleteEvent() {
+        deleteItem();
+        setEditingMode(false);
+    }
+
+    protected Button createButton(String text, boolean enabled, Consumer<ClickEvent<Button>> consumer, ButtonVariant... themeVariants) {
         Button button = new Button(text, consumer::accept);
+        button.addThemeVariants(themeVariants);
         button.setEnabled(enabled);
         return button;
     }
@@ -96,16 +111,21 @@ public abstract class AbstractCrudComponent<T,
         return Optional.ofNullable(buttons.get(text));
     }
 
-    protected void setItems(List<T> items) {
-        grid.setItems(items);
+    protected Consumer<Void> getDefaultEnterConsumer() {
+        return event -> onSaveEvent();
     }
 
-    private VerticalLayout createSearchAbleGrid(GRID grid) {
+    protected Consumer<Void> getDefaultEscapeConsumer() {
+        return event -> onDiscardEvent();
+    }
+
+    private VerticalLayout createSearchableGrid(GRID grid) {
         VerticalLayout gridWithSearch = new VerticalLayout();
         HorizontalLayout searchBar = new HorizontalLayout();
 
         TextField searchText = new TextField("Search");
         // TODO: Implement searching on keypress - probably needs DataProvider
+
         Button create = new Button("Create", event -> {
             form.clearAllFields();
             setEditingMode(true);
@@ -138,21 +158,33 @@ public abstract class AbstractCrudComponent<T,
     }
 
     private void saveItem() {
-        service.save(form.getItem()); // TODO: Notifications
-        grid.getDataProvider().refreshAll();
-        refreshItems();
-        setEditingMode(false);
+        try {
+            service.save(form.getItem());
+            grid.getDataProvider().refreshAll();
+            refreshItems();
+            setEditingMode(false);
+            Notifier.showSuccess("Saved.");
+        } catch (Throwable t) {
+            log.error("Failed to save item: {}", form.getItem(), t);
+            Notifier.showError("Failed to save item.");
+        }
     }
 
     private void deleteItem() {
-        service.delete(form.getItem()); // TODO: Notifications
-        grid.getDataProvider().refreshAll();
-        refreshItems();
-        setEditingMode(false);
+        try {
+            service.delete(form.getItem());
+            grid.getDataProvider().refreshAll();
+            refreshItems();
+            setEditingMode(false);
+            Notifier.showSuccess("Deleted.");
+        } catch (Throwable t) {
+            log.error("Failed to delete item: {}", form.getItem(), t);
+            Notifier.showError("Failed to delete item.");
+        }
     }
 
     protected abstract FORM createFormLayout();
     protected abstract GRID createGrid(SERVICE service, Consumer<ItemDoubleClickEvent<T>> consumer);
     protected abstract List<Button> getFormButtons();
-    protected abstract void refreshItems(); // TODO: This is a hack, should use the DataProvider
+    protected abstract void refreshItems();
 }

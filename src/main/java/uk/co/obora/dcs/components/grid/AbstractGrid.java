@@ -6,14 +6,21 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.data.provider.DataProvider;
+import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.function.ValueProvider;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import uk.co.obora.dcs.components.Notifier;
 import uk.co.obora.dcs.entity.DcsServer;
+import uk.co.obora.dcs.service.AbstractDbService;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 @Getter
 @Slf4j
@@ -21,28 +28,60 @@ public abstract class AbstractGrid<T> extends Grid<T> {
 
     private Map<String, Map<String, Object>> columnAttributes = new HashMap<>();
     private Map<String, ValueProvider<T, ?>> columnDefinitions = new LinkedHashMap<>();
-    private Set<String> columnNamesInOrder = new LinkedHashSet<>();
 
-    public AbstractGrid(Class<T> clz, Consumer<ItemDoubleClickEvent<T>> consumer) {
+    private AbstractDbService<T> service;
+
+    public AbstractGrid(Class<T> clz, Consumer<ItemDoubleClickEvent<T>> consumer, AbstractDbService<T> service) {
         super(clz, false);
 
-        columnNamesInOrder.addAll(setupColumnOrdering());
+        this.service = service;
         columnDefinitions.putAll(setupColumnDefinitions());
         columnAttributes.putAll(setupColumnAttributes());
 
-
-        columnNamesInOrder.forEach(column -> {
-            // TODO: should use computeIfAbsent to provide a default implementation
-            ValueProvider<T, ?> valueProvider = columnDefinitions.get(column);
-            this.createColumn(Map.entry(column, valueProvider));
-        });
-        /*columnDefinitions.entrySet().forEach(this::createColumn);*/
+        columnDefinitions.entrySet().forEach(this::createColumn);
 
         super.getColumns().getLast().setFlexGrow(0);
         addItemDoubleClickListener(consumer::accept);
 
         setWidthFull();
         setHeight("100%");
+
+        setDataProvider(
+            DataProvider.fromCallbacks(
+                query -> findSafely(service, query),
+                query -> getCountSafely(service, query)));
+
+        // TODO: Filtering using this: https://vaadin.com/docs/latest/flow/binding-data/data-provider
+    }
+
+    // TODO: This method just renders the text of the object
+    protected static ComponentRenderer<Icon, DcsServer> iconRendererWithClickListener(VaadinIcon icon, ComponentEventListener<ClickEvent<Icon>> consumer) {
+        return new ComponentRenderer<>(server -> createIconWithClickListener(icon.create(), consumer));
+    }
+
+    protected static Icon createIconWithClickListener(Icon icon, ComponentEventListener<ClickEvent<Icon>> consumer) {
+        icon.addClickListener(consumer);
+        return icon;
+    }
+
+    private static <T> Stream<T> findSafely(AbstractDbService<T> service, Query<T,Void> query) {
+        try {
+            return service.find(query.getOffset(), query.getLimit());
+        } catch (Throwable t) {
+            log.error("Failed to fetch items from database", t);
+            Notifier.showError("Failed to communicate with the database.");
+            return Stream.empty();
+        }
+    }
+
+    private static <T> int getCountSafely(AbstractDbService<T> service, Query<T,Void> query) {
+        try {
+            return service.getCount().intValue(); // note, Vaadin assumes int for Count. Things get interesting at Integer.MAX_VALUE
+        } catch (Throwable t) {
+            log.error("Failed to fetch count from database", t);
+            Notifier.showError("Failed to communicate with the database.");
+            return 0;
+        }
     }
 
     private void createColumn(Map.Entry<String, ValueProvider<T, ?>> entry) {
@@ -63,7 +102,6 @@ public abstract class AbstractGrid<T> extends Grid<T> {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private <A> A getAttributeType(Object o, A defaultValue) {
         return (A) switch (defaultValue) {
             case Boolean b -> {
@@ -89,16 +127,6 @@ public abstract class AbstractGrid<T> extends Grid<T> {
         };
     }
 
-    protected static ComponentRenderer<Icon, DcsServer> iconRendererWithClickListener(VaadinIcon icon, ComponentEventListener<ClickEvent<Icon>> consumer) {
-        return new ComponentRenderer<>(server -> createIconWithClickListener(icon.create(), consumer));
-    }
-
-    protected static Icon createIconWithClickListener(Icon icon, ComponentEventListener<ClickEvent<Icon>> consumer) {
-        icon.addClickListener(consumer);
-        return icon;
-    }
-
-    protected abstract Set<String> setupColumnOrdering();
-    protected abstract Map<String, ValueProvider<T, ?>> setupColumnDefinitions();
+    protected abstract LinkedHashMap<String, ValueProvider<T, ?>> setupColumnDefinitions();
     protected abstract Map<String, Map<String, Object>> setupColumnAttributes();
 }

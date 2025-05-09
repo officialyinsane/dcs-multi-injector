@@ -4,7 +4,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import uk.co.obora.dcs.components.DcsServerCrudComponent;
+import uk.co.obora.dcs.components.crud.DcsServerCrudComponent;
 import uk.co.obora.dcs.service.DcsServerService;
 
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;

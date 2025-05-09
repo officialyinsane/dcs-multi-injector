@@ -1,8 +1,9 @@
 package uk.co.obora.dcs.service;
 
 import com.vaadin.flow.spring.annotation.UIScope;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import uk.co.obora.dcs.entity.DcsServer;
 import uk.co.obora.dcs.repository.DcsServerRepository;
@@ -14,14 +15,19 @@ import java.util.Map;
 
 import static java.util.stream.Collectors.toMap;
 
-@RequiredArgsConstructor
 @Service
 @Slf4j
 @UIScope
 public class DcsServerService extends AbstractDbService<DcsServer> {
 
+    private static final int ITEMS_PER_PAGE = 50;
+
     private final DcsServerRepository repository;
 
+    public DcsServerService(DcsServerRepository repository) {
+        super(ITEMS_PER_PAGE);
+        this.repository = repository;
+    }
     public List<DcsServer> list() {
         return repository.findAll();
     }
@@ -44,10 +50,19 @@ public class DcsServerService extends AbstractDbService<DcsServer> {
         servers.computeIfAbsent(defaultServerInstall.getName(), name -> defaultServerInstall);
 
         return new ArrayList<>(servers.values());
-
     }
 
     public void delete(DcsServer server) {
         repository.delete(server);
+    }
+
+    @Override
+    public Page<DcsServer> findPage(Pageable pageable) {
+        return repository.findAll(pageable);
+    }
+
+    @Override
+    public Long getCount() {
+        return repository.count();
     }
 }

@@ -1,4 +1,4 @@
-package uk.co.obora.dcs.components;
+package uk.co.obora.dcs.components.crud;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
@@ -25,7 +25,7 @@ public class DcsServerCrudComponent extends AbstractCrudComponent<DcsServer, Dcs
 
     @Override
     protected DcsServerFormLayout createFormLayout() {
-        return new DcsServerFormLayout();
+        return new DcsServerFormLayout(getDefaultEnterConsumer(), getDefaultEscapeConsumer());
     }
 
     @Override
@@ -35,6 +35,7 @@ public class DcsServerCrudComponent extends AbstractCrudComponent<DcsServer, Dcs
 
     @Override
     protected void refreshItems() {
-        setItems(getService().fetchDcsServersSafely());
+        getGrid().getDataProvider().refreshAll();
     }
+
 }
