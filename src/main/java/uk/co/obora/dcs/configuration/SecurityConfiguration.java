@@ -26,7 +26,7 @@ import static org.springframework.security.oauth2.client.web.OAuth2Authorization
 @EnableWebSecurity
 public class SecurityConfiguration {
 
-    private static final String DEFAULT_SUCCESS_URL = "/auth";
+    private static final String DEFAULT_SUCCESS_URL = "/";
 
     private final DiscordAuthResolver discordAuthResolver;
 
@@ -43,8 +43,11 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, OAuth2UserService<OAuth2UserRequest, OAuth2User> discordIdentityService) throws Exception {
         HttpSecurity security = httpSecurity.authorizeHttpRequests(requests -> requests
-                .requestMatchers(new AntPathRequestMatcher("/oauth2/**"))
-                .permitAll()
+            // TODO: Adding the below rules allows unauthenticated users to browse the whole page
+               /* .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/sw.js")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/VAADIN/**")).permitAll()*/
+                .requestMatchers(new AntPathRequestMatcher("/oauth2/**")).permitAll()
                 .anyRequest()
                 .authenticated())
             .oauth2Login(configurer -> configurer

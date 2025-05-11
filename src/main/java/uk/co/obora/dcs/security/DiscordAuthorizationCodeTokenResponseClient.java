@@ -20,8 +20,8 @@ import java.util.Arrays;
 
 public class DiscordAuthorizationCodeTokenResponseClient implements OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> {
 
-    private Converter<OAuth2AuthorizationCodeGrantRequest, RequestEntity<?>> requestEntityConverter = new DiscordRequestEntityConverter(new OAuth2AuthorizationCodeGrantRequestEntityConverter());
-    private RestTemplate oauthRestTemplate;
+    private final Converter<OAuth2AuthorizationCodeGrantRequest, RequestEntity<?>> requestEntityConverter = new DiscordRequestEntityConverter(new OAuth2AuthorizationCodeGrantRequestEntityConverter());
+    private final RestTemplate oauthRestTemplate;
 
     public DiscordAuthorizationCodeTokenResponseClient() {
         RestTemplate restTemplate = new RestTemplate(Arrays.asList(new FormHttpMessageConverter(), new OAuth2AccessTokenResponseHttpMessageConverter()));

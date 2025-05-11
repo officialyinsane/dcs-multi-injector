@@ -10,7 +10,7 @@ import uk.co.obora.dcs.service.DcsServerService;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class DcsServerCrudComponent extends AbstractCrudComponent<DcsServer, DcsServerFormLayout, DcsServerGrid, DcsServerService> { // TODO: Make this abstract once it works
+public class DcsServerCrudComponent extends AbstractCrudComponent<DcsServer, DcsServerFormLayout, DcsServerGrid, DcsServerService> {
 
     public DcsServerCrudComponent(DcsServerService service) {
         super(service);

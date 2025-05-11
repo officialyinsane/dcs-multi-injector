@@ -26,10 +26,10 @@ import java.util.stream.Stream;
 @Slf4j
 public abstract class AbstractGrid<T> extends Grid<T> {
 
-    private Map<String, Map<String, Object>> columnAttributes = new HashMap<>();
-    private Map<String, ValueProvider<T, ?>> columnDefinitions = new LinkedHashMap<>();
+    private final Map<String, Map<String, Object>> columnAttributes = new HashMap<>();
+    private final Map<String, ValueProvider<T, ?>> columnDefinitions = new LinkedHashMap<>();
 
-    private AbstractDbService<T> service;
+    private final AbstractDbService<T> service;
 
     public AbstractGrid(Class<T> clz, Consumer<ItemDoubleClickEvent<T>> consumer, AbstractDbService<T> service) {
         super(clz, false);

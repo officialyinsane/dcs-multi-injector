@@ -18,10 +18,8 @@ import java.util.function.Consumer;
 @Getter
 public abstract class AbstractFormLayout<T> extends FormLayout {
 
-    // TODO: Pressing Enter should save
-    // TODO: Pressing ESC should discard
-    private Consumer<Void> consumeEnterPressed;
-    private Consumer<Void> consumeEscapePressed;
+    private final Consumer<Void> consumeEnterPressed;
+    private final Consumer<Void> consumeEscapePressed;
 
     private Map<String, Component> fields = new LinkedHashMap<>();
     private T cachedItem;
@@ -80,8 +78,11 @@ public abstract class AbstractFormLayout<T> extends FormLayout {
     private void onKeyUp(KeyUpEvent event) {
         if (event.getKey().equals(Key.ENTER)) {
             consumeEnterPressed.accept(null);
-        } else if (event.getKey().equals(Key.ESCAPE)) {
-            consumeEscapePressed.accept(null);
+        } else { // this is needed because the key doesn't equal properly
+            Key.ESCAPE.getKeys().stream()
+                .filter(key -> key.equals(event.getKey().toString()))
+                .findFirst()
+                .ifPresent(k -> consumeEscapePressed.accept(null));
         }
     }
 
