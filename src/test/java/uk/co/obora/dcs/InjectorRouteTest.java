@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import uk.co.obora.dcs.dto.InboundPacket;
 import uk.co.obora.dcs.entity.DcsServer;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @Disabled("This test requires a running DCS instance")
@@ -42,11 +44,18 @@ public class InjectorRouteTest {
         String code = "trigger.action.outText('hello world', 30, false);";
 
         try {
-            InboundPacket response = Injector.doInjection(server, code);
+            AtomicReference<InboundPacket> response = new AtomicReference<>();
+            AtomicReference<Throwable> ex = new AtomicReference<>();
 
-            assertNotNull(response);
-            assertEquals("OK", response.getStatus());
-            assertEquals("receipt", response.getType());
+            Injector.doInjection(server, code).subscribe(
+                response::set,
+                ex::set
+            );
+
+            assertNotNull(response.get());
+            assertNull(ex.get());
+            assertEquals("OK", response.get().getStatus());
+            assertEquals("receipt", response.get().getType());
 
         } catch (Throwable t) {
             fail("should not have thrown the exception");

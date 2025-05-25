@@ -10,15 +10,18 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import uk.co.obora.dcs.Injector;
 import uk.co.obora.dcs.dto.InboundPacket;
 import uk.co.obora.dcs.entity.DcsServer;
 import uk.co.obora.dcs.service.DcsServerService;
 
+import java.time.Duration;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.vaadin.flow.component.notification.NotificationVariant.LUMO_ERROR;
 import static com.vaadin.flow.component.notification.NotificationVariant.LUMO_SUCCESS;
@@ -26,7 +29,10 @@ import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CE
 
 @Route("dcs-injector")
 @RolesAllowed("REGULAR_USER")
+@Slf4j
 public class InjectorRoute extends VerticalLayout {
+
+    private static final Integer DEFAULT_TIMEOUT_SECS = 3;
 
     private final DcsServerService service;
     private final ComboBox<DcsServer> serverSelect = new ComboBox<>();
@@ -91,16 +97,31 @@ public class InjectorRoute extends VerticalLayout {
 
     private void executeCode() {
         try {
-            InboundPacket response = Injector.doInjection(serverSelect.getValue(), code.getValue());
-            showNotification("Injection completed: " + response.getStatus(), LUMO_SUCCESS);
-        } catch (Exception e) {
-            String message = "Injection failed: " + e.getMessage();
+            AtomicReference<Throwable> ex = new AtomicReference<>();
 
-            if (e.getCause() instanceof TimeoutException) {
-                message = "Injection timed out. Likely incorrect Lua.";
+            InboundPacket reply = Injector.doInjection(serverSelect.getValue(), code.getValue())
+                .block(Duration.ofSeconds(DEFAULT_TIMEOUT_SECS)); // TODO: Make this configurable per server
+
+            if (ex.get() != null) {
+                displayException(ex.get());
+            } if (reply == null) {
+                showNotification("Injection failed, see logs. ", LUMO_ERROR);
+                log.error("Failed to get a reply from the server.");
+            } else {
+                showNotification("Injection completed: " + reply.getStatus(), LUMO_SUCCESS);
             }
-            showNotification(message, LUMO_ERROR);
+        } catch (Exception e) {
+            displayException(e);
         }
+    }
+
+    private static void displayException(Throwable t) {
+        String message = "Injection failed: " + t.getMessage();
+
+        if (t.getCause() instanceof TimeoutException) {
+            message = "Injection timed out. Likely incorrect Lua.";
+        }
+        showNotification(message, LUMO_ERROR);
     }
 
     private static void showNotification(String message, NotificationVariant... variants) {
