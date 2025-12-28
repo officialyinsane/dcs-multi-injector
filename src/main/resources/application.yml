@@ -19,7 +19,7 @@ management:
 spring:
   datasource:
     password: "${POSTGRES_PASSWORD:password}"
-    url: "jdbc:postgresql://${POSTGRES_HOST:dcs-injector-db}:5432/injector"
+    url: "jdbc:postgresql://${POSTGRES_HOST:dcs-injector-db}:${POSTGRES_PORT:5432}/injector"
     username: "${POSTGRES_USER:user}"
   flyway:
     clean-disabled: true

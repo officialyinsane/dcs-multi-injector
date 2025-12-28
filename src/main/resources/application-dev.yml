@@ -4,5 +4,12 @@ logging:
        springframework:
          security: DEBUG
 
+server:
+  port: 8089
+
+spring:
+  datasource:
+    url: "jdbc:postgresql://${POSTGRES_HOST:dcs-injector-db}:5431/injector"
+
 vaadin:
   devmode-caching: true
